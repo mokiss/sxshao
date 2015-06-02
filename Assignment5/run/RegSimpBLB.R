@@ -1,0 +1,69 @@
+#bag of little bootstrap
+library(parallel)
+setwd("/home/sxt999/run")
+rm(list = ls())
+cname = "regsimpblb"
+compile = paste0("R CMD SHLIB ", cname,".c")
+ccode = paste0(cname,".so")
+system(compile)
+
+regsamp = function(c, f1, f2, yindex, xindex, samp, weight){
+  dyn.load(c)
+  re = .C("regsamp", as.character(f1), as.character(f2), as.integer(yindex), as.integer(xindex), 
+          as.numeric( rep(0,4)), as.integer(0),as.integer(samp), as.integer(weight), as.integer(0) )
+  dyn.unload(c)
+  out = re[[5]]
+  out[5] = re[[9]]
+  out[6] = re[[6]]
+  names(out) = c("x", "y","xy","x^2","stop","n")  
+  return(out)
+}
+y= c(10,11)
+x = 9
+file1 = sapply(1:12, function(i) paste0("/home/data/NYCTaxis/trip_data_", i, ".csv"))
+file2 = sapply(1:12, function(i) paste0("/home/data/NYCTaxis/trip_fare_", i, ".csv"))
+ns = c(14776616,13990177,15749229,15100469,15285050,14385457,13823841,12597110,14107694,15004557,
+       14388452,13971119 )
+boot = function(c,fs1, fs2, bindex.sort, n, yindex, xindex, seed ){
+  set.seed(seed)
+  boot = sample(bindex.sort, n, replace = TRUE)
+  count.boot = table(boot)
+  names.boot = as.integer(names(count.boot))
+  summ = rep(0, length(bindex.sort))
+  summ[match(names.boot, bindex.sort)] = count.boot
+  #summ is the corresponding frequency of bindex.sort
+  
+  sampindex = bindex.sort
+  w = summ
+  
+  result = as.list( 1:12)
+  for(i in c(1:12)){
+    result[[i]] = regsamp(c, fs1[i], fs2[i], yindex, xindex, sampindex, w)
+    sampindex = sampindex[ (result[[i]][5]+1) : length(sampindex)] - result[[i]][6]
+    w = w[  (result[[i]][5] +1) : length(w) ]
+  }
+  boot.summ = sapply(1:4 , function(i) sum(unlist(lapply(result,"[[",i ))))
+  beta = (boot.summ[3]- boot.summ[1]*boot.summ[2]/n) / 
+    ( boot.summ[4] - (boot.summ[1])*(boot.summ[1])/n) 
+  
+  alpha = boot.summ[2]/n - beta * boot.summ[1]/n
+  return( c(alpha, beta))
+}
+lbl = function(c, fs1, fs2, yindex, xindex, n.s, seed, power, m){
+  set.seed(seed)
+  n = sum(n.s)
+  b = n^power
+  bindex = sample(1:n, b, replace = FALSE)
+  bindex.sort = bindex[order(bindex)]
+  estimate = lapply(1:m, function(i) boot(c,fs1,fs2, bindex.sort, n, yindex, xindex,i ))
+  return(estimate)
+}
+
+cl = makeCluster(12, "FORK")
+t = system.time(
+  result <- parLapplyLB(cl, 12:23, function(i) lbl(ccode, file1, file2, y, x, ns, i, 0.65, 10) ) )
+stopCluster(cl)
+
+save.image("resultBLB.rda")
+
+

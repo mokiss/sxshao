@@ -1,0 +1,61 @@
+
+R version 3.1.0 (2014-04-10) -- "Spring Dance"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> #test simple regression on parallel
+> library(parallel)
+> setwd("/home/sxt999/run")
+> rm(list = ls())
+> cname = "regsimp"
+> compile = paste0("R CMD SHLIB ", cname,".c")
+> ccode = paste0(cname,".so")
+> system(compile)
+gcc -std=gnu99 -I/usr/local/R-3.1.0/lib64/R/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c regsimp.c -o regsimp.o
+gcc -std=gnu99 -shared -L/usr/local/lib64 -o regsimp.so regsimp.o -L/usr/local/R-3.1.0/lib64/R/lib -lR
+> y = c(10,11)
+> x = 9
+> regsimp = function(c, f1, f2, yindex, xindex) {
++   dyn.load(c)
++   result = .C("reg",as.character(f1),as.character(f2),as.integer(yindex), as.integer(xindex),
++               as.numeric(rep(0,2)),as.integer(0), as.numeric(0), as.numeric(0))
++   out = result[[5]]
++   out[3:5] = c(result[[7]], result[[8]],result[[6]])
++   names(out) = c("x", "y","xy","x^2","n")
++   dyn.unload(c)
++   return(out)
++ }
+> file1 = sapply(1:12, function(i) paste0("/home/data/NYCTaxis/trip_data_", i, ".csv"))
+> file2 = sapply(1:12, function(i) paste0("/home/data/NYCTaxis/trip_fare_", i, ".csv"))
+> 
+> cl = makeCluster(12, "FORK")
+> t = system.time(
++   result <- parLapplyLB(cl, 1:12, function(i) regsimp(ccode, file1[i], file2[i], y, x) ) )
+> stopCluster(cl)
+> summ = sapply(1:5 , function(i) sum(unlist(lapply(result,"[[",i ))))
+> 
+> beta = (summ[3]- summ[1]*summ[2]/summ[5]) / ( summ[4] - (summ[1])*(summ[1])/summ[5]) 
+> 
+> alpha = summ[2]/summ[5] - beta * summ[1]/summ[5]
+> 
+> save.image("result.rda")
+> 
+> proc.time()
+   user  system elapsed 
+  0.460   1.138  23.159 

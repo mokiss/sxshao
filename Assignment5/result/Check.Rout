@@ -1,0 +1,82 @@
+
+R version 3.1.0 (2014-04-10) -- "Spring Dance"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> #need to check medallion,hack_license,vendor_id
+> #the first three columns
+> library(parallel)
+> setwd("/home/sxt999/run")
+> rm(list = ls())
+> cname = "check"
+> compile = paste0("R CMD SHLIB ", cname,".c")
+> ccode = paste0(cname,".so")
+> system(compile)
+gcc -std=gnu99 -I/usr/local/R-3.1.0/lib64/R/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c check.c -o check.o
+check.c: In function ‘check’:
+check.c:29: warning: passing argument 3 of ‘getfields’ from incompatible pointer type
+check.c:7: note: expected ‘char **’ but argument is of type ‘char ***’
+check.c:30: warning: passing argument 3 of ‘getfields’ from incompatible pointer type
+check.c:7: note: expected ‘char **’ but argument is of type ‘char ***’
+check.c:32: warning: passing argument 1 of ‘strlen’ from incompatible pointer type
+/usr/include/string.h:399: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 1 of ‘strlen’ from incompatible pointer type
+/usr/include/string.h:399: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 1 of ‘__builtin_strcmp’ from incompatible pointer type
+check.c:32: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 2 of ‘__builtin_strcmp’ from incompatible pointer type
+check.c:32: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 1 of ‘strlen’ from incompatible pointer type
+/usr/include/string.h:399: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 1 of ‘__builtin_strcmp’ from incompatible pointer type
+check.c:32: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 2 of ‘__builtin_strcmp’ from incompatible pointer type
+check.c:32: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 1 of ‘strlen’ from incompatible pointer type
+/usr/include/string.h:399: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 1 of ‘__builtin_strcmp’ from incompatible pointer type
+check.c:32: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 2 of ‘__builtin_strcmp’ from incompatible pointer type
+check.c:32: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 1 of ‘__builtin_strcmp’ from incompatible pointer type
+check.c:32: note: expected ‘const char *’ but argument is of type ‘char **’
+check.c:32: warning: passing argument 2 of ‘__builtin_strcmp’ from incompatible pointer type
+check.c:32: note: expected ‘const char *’ but argument is of type ‘char **’
+gcc -std=gnu99 -shared -L/usr/local/lib64 -o check.so check.o -L/usr/local/R-3.1.0/lib64/R/lib -lR
+> check = function(c, f1, f2) {
++   dyn.load(c)
++   col1 = c(0,1,2,5)
++   col2 = c(0,1,2,3)
++   result = .C("check",as.character(f1),as.character(f2),as.integer(6),
++      as.integer(4),as.integer(col1),as.integer(col2), as.integer(0))[[7]]
++   dyn.unload(c)
++   return(result)
++ }
+> file1 = sapply(1:12, function(i) paste0("/home/data/NYCTaxis/trip_data_", i, ".csv"))
+> file2 = sapply(1:12, function(i) paste0("/home/data/NYCTaxis/trip_fare_", i, ".csv"))
+> 
+> cl = makeCluster(12, "FORK")
+> t = system.time( result <- parLapplyLB(cl, 1:12, function(x) check(ccode, file1[x], file2[x]) ) )
+> stopCluster(cl)
+> save.image("checkresult.rda")
+> 
+> 
+> proc.time()
+   user  system elapsed 
+  0.495   0.612  36.792 

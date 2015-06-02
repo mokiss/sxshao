@@ -1,0 +1,112 @@
+
+R version 3.1.0 (2014-04-10) -- "Spring Dance"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-unknown-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> #reg two blb
+> #bag of little bootstrap
+> library(parallel)
+> setwd("/home/sxt999/run")
+> rm(list = ls())
+> cname = "regtwoblb"
+> compile = paste0("R CMD SHLIB ", cname,".c")
+> ccode = paste0(cname,".so")
+> system(compile)
+gcc -std=gnu99 -I/usr/local/R-3.1.0/lib64/R/include -DNDEBUG  -I/usr/local/include    -fpic  -g -O2  -c regtwoblb.c -o regtwoblb.o
+gcc -std=gnu99 -shared -L/usr/local/lib64 -o regtwoblb.so regtwoblb.o -L/usr/local/R-3.1.0/lib64/R/lib -lR
+> 
+> regtwosamp = function(c, f1, f2, yindex, xindex, samp, weight) {
++   dyn.load(c)
++   #yindex = c(10,11)
++   #xindex = c(9,7)
++   result = .C("regtwosamp",as.character(f1),as.character(f2),as.integer(yindex), as.integer(xindex),
++               as.numeric(rep(0,3)), as.numeric(rep(0,2)), as.numeric(0), as.numeric(rep(0,2)), 
++               as.integer(samp), as.integer(weight), as.integer(0), as.integer(0))
++   out = result[[5]]
++   out[4:5] = result[[6]]
++   out[6] = result[[7]]
++   out[7:8] = result[[8]]
++   out[9] = result[[11]]
++   out[10] = result[[12]]
++   names(out) = c("x1", "x2", "y","x1^2", "x2^2","x1*x2","x1*y","x2*y","stop", "n")
++   dyn.unload(c)
++   return(out)
++ }
+> 
+> y = c(10,11)
+> x = c(9,7)
+> file1 = sapply(1:12, function(i) paste0("/home/data/NYCTaxis/trip_data_", i, ".csv"))
+> file2 = sapply(1:12, function(i) paste0("/home/data/NYCTaxis/trip_fare_", i, ".csv"))
+> ns = c(14776616,13990177,15749229,15100469,15285050,14385457,13823841,12597110,14107694,15004557,
++        14388452,13971119 )
+> 
+> boot = function(c, fs1,fs2, bindex.sort, n, yindex, xindex, seed ){
++   set.seed(seed)
++   boot = sample(bindex.sort, n, replace = TRUE)
++   count.boot = table(boot)
++   names.boot = as.integer(names(count.boot))
++   summ = rep(0, length(bindex.sort))
++   summ[match(names.boot, bindex.sort)] = count.boot
++   #summ is the corresponding frequency of bindex.sort
++   
++   sampindex = bindex.sort
++   w = summ
++   
++   result = as.list( 1:12)
++   for(i in c(1:12)){
++     result[[i]] = regtwosamp(c, fs1[i], fs2[i], yindex, xindex, sampindex, w)
++     sampindex = sampindex[ (result[[i]][9]+1) : length(sampindex)] - result[[i]][10]
++     w = w[  (result[[i]][9] +1) : length(w) ]
++   }
++   boot.summ = sapply(1:8 , function(i) sum(unlist(lapply(result,"[[",i ))))
++   
++   beta1 = (boot.summ[5]*boot.summ[7] - boot.summ[6]*boot.summ[8])/
++     (boot.summ[4]*boot.summ[5] - boot.summ[6]^2 )
++   
++   beta2 = (boot.summ[4]*boot.summ[8] - boot.summ[6]*boot.summ[7])/
++     (boot.summ[4]*boot.summ[5] - boot.summ[6]^2 )
++   alpha = boot.summ[3]/n - beta1 * boot.summ[1]/n - beta2 * boot.summ[2]/n
++   
++   return( c(alpha, beta1, beta2))
++ }
+> 
+> lbl = function(c, fs1, fs2, yindex, xindex, n.s, seed, power, m){
++   set.seed(seed)
++   n = sum(n.s)
++   b = n^power
++   bindex = sample(1:n, b, replace = FALSE)
++   bindex.sort = bindex[order(bindex)]
++   estimate = lapply(1:m, function(i) boot(c, fs1,fs2, bindex.sort, n, yindex, xindex,i ))
++   return(estimate)
++   
++ }
+> 
+> cl = makeCluster(12, "FORK")
+> t = system.time(
++   result <- parLapplyLB(cl, 12:23, function(i) lbl(ccode, file1, file2, y, x, ns, i, 0.65, 10) ) )
+> stopCluster(cl)
+> 
+> save.image("resulttwoBLB.rda")
+> 
+> 
+> 
+> 
+> proc.time()
+    user   system  elapsed 
+   0.511    1.199 5163.962 

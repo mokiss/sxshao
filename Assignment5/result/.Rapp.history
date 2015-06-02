@@ -1,0 +1,196 @@
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+ls()
+b
+hist
+summ = hist[[1]]#
+for (i in c(2:12)) summ = summ + hist[[i]]
+summ
+total = sum(summ)#
+cum = cumsum(summ)
+cum
+decln = total*c(1:9)/10
+decln
+which( decln [1] > cum)
+which( decln [2] > cum)
+which( decln [3] > cum)
+which( decln [4] > cum)
+which( decln [9] > cum)
+decls = sapply(decln, function(i) which( i > cum))
+decls
+decls = sapply(decln, function(i) which( i <cum))
+decls
+decls = sapply(decln, function(i) which( i < cum)[1])
+decls
+wid
+width
+ls()
+b[1]-b[2]
+(b[2]-b[1])cum
+(b[2]-b[1])/cum
+clear
+ls()
+class(summ)
+wid = (b[2]-b[1])/breaks
+wid
+decls
+wid = (b[2]-b[1])/breaks#
+decls*wid + b[1]
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+b
+load("/Users/Shawn/Documents/data/treasure/histRonly.rda")
+ls()
+deciles
+hist
+ls()
+load("/Users/Shawn/Documents/data/treasure/histRonly.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/histRonly.rda")
+ls()
+hist
+ls()
+deciles
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+ls()
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+alpha
+beta
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+ls()
+beta
+summ
+result
+alpha
+load("/Users/Shawn/Documents/data/treasure/checkresult.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/checkresult.rda")
+ls()
+result
+load("/Users/Shawn/Documents/data/treasure/histlapply.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/histlapply.rda")
+ls
+ls()
+deciles
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+deciles
+ls()
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+ls()
+result
+load("/Users/Shawn/Documents/data/treasure/histRonly.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/histRonly.rda")
+ls()
+deciles
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+ls()
+deciles
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/histlapply.rda")
+deciles
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+ls
+ls()
+beta
+result
+load("/Users/Shawn/Documents/data/treasure/histRonly.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/histRonly.rda")
+ls
+ls()
+deciles
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+ls()
+rm(list = ls())
+ls()
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+ls()
+regsimp
+load("/Users/Shawn/Documents/data/treasure/resulttwo.rda")
+rm(list = ls())
+ls()
+load("/Users/Shawn/Documents/data/treasure/resulttwo.rda")
+ls()
+alpha
+summ
+result
+load("/Users/Shawn/Documents/data/treasure/minmax.rda")
+ls()
+result1
+result2
+load("/Users/Shawn/Documents/data/treasure/minmax.rda")
+rm(list= ls())
+load("/Users/Shawn/Documents/data/treasure/minmax.rda")
+ls()
+result1
+result2
+ls()
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+ls()
+summ
+total
+load("/Users/Shawn/Documents/data/treasure/checkresult.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/checkresult.rda")
+ls()
+result
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/result.rda")
+ls()
+result
+lapply(result, function(i) i$n)
+lapply(result, function(i) i["n"])
+unlist(lapply(result, function(i) i["n"]))
+rm(list = ls())
+ls()
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+ls
+ls()
+deciles
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+ls()
+hist
+result
+load("/Users/Shawn/Documents/data/treasure/resulttwo.rda")
+ls()
+b
+beta1
+beta2
+alpha
+load("/Users/Shawn/Documents/data/treasure/minmax.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/minmax.rda")
+ls()
+result1
+result2
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/hist.rda")
+ls()
+deciles
+b
+breaks
+wid
+hist
+plot(hist[[1]])
+bar(hist[[1]])
+barplot(hist[[1]])
+hist[[1]]
+as.vector(hist[[1]])
+barplot(as.vector(hist[[1]]))
+load("/Users/Shawn/Documents/data/treasure/resultBLB.rda")
+rm(list = ls())
+load("/Users/Shawn/Documents/data/treasure/resultBLB.rda")
+ls()
+result
