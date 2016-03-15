@@ -1,0 +1,34 @@
+load("/Users/Shawn/Dropbox/242/Project/app/data/stateSelect.rda")
+rm(list = ls())
+load("/Users/Shawn/Dropbox/242/Project/app/data/stateSelect.rda")
+ls()
+states.special
+load("/Users/Shawn/Dropbox/242/Project/app/data/airport.rda")
+ls()
+names(airport)
+names(airport)[3:4]
+names(airport)[3:4] = c("lat", "long")
+head(airport)
+summary(airport)
+save(airport, file = 'airport.rda')
+load("/Users/Shawn/Dropbox/242/Project/app/data/airport.rda")
+ls()
+head(airport)
+load("/Users/Shawn/Dropbox/242/Project/app/data/airport.rda")
+as.character(airport$ident)
+airport$ident = as.character(airport$ident)
+airport$name = as.character(airport$name)
+as.character(airport[,5:7]
+)
+airport
+airport$iso_country
+as.character(airport$iso_country)
+airport$iso_country = as.character(airport$iso_country)
+airport$iso_region = as.character(airport$iso_region)
+airport$municipality = as.character(airport$municipality)
+airport
+save(airport, file = "airport.rda")
+load("/Users/Shawn/Dropbox/242/Project/app/data/airport.rda")
+ls()
+load("/Users/Shawn/Dropbox/242/Project/app/data/counties.rds")
+ls()
